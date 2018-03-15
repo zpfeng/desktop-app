@@ -88,8 +88,11 @@
     "loginSuccess": "登录成功, 正在跳转",
     "logining": "正在登录",
     "logout": "退出",
+    "Logout": "注销",
     "minLength": "长度至少为%s",
     "Move": "移动",
+    "doubleClick": "请“双击”期望的笔记本",
+    "selectNotebook": "选择笔记本",
     "myBlog": "我的博客",
     "myNote": "我的笔记",
     "myNotebook": "我的笔记本",
@@ -137,6 +140,7 @@
     "shareInfo": "你也可以将知识分享给你的好友.",
     "shareToFriends": "分享给好友",
     "simple": "简约",
+    
     "submit": "提交",
     "suggestions": "建议",
     "suggestionsInfo": "帮助我们完善leanote",
@@ -213,6 +217,13 @@
 	"Attachments": "附件",
 	"UnTitled": "无标题",
 
+    "Vim mode": "Vim模式",
+    "Emacs mode": "Emacs模式",
+    "Normal mode": "普通模式",
+    "Light editor": "轻量编辑器",
+    "Light": "轻量",
+    "Normal": "普通",
+
 	"Add sub notebook": "添加子笔记本",
 	"Rename": "重命名",
 	"Import notes": "导入笔记",
@@ -225,6 +236,7 @@
 	"Username or Email": "用户名或邮箱",
 	"Password": "密码",
 	"Sign up": "注册",
+    "Sign up Leanote": "注册Leanote",
 	"Forget password?": "忘记密码?",
 	"Find password": "找回密码",
 
@@ -262,7 +274,7 @@
 
 	"More...": "更多",
 	"Force full sync": "强制全量同步",
-	"ForceFullSyncMsg": "强制全量同步会从服务器上同步所有数据, 可能耗时比较久, 你确定?",
+	"ForceFullSyncMsg": "强制全量同步会先将该帐户的本地数据全部删除(包括数据库, 图片和附件), 然后从服务器上同步所有数据, 你确定?",
 
 	"Are you sure to delete it ?": "确定删除?",
 	"Are you sure ?": "你确定执行该操作?",
@@ -274,6 +286,7 @@
     "Password is required": "请输入密码",
 
     "The minimum password length is 6": "密码长度最少6位",
+    "Sign in to Self-hosted Service": "登录自建服务",
     "Self-hosted Service": "自建服务",
     "Create Local Account": "创建本地帐户",
     "Sign in to Leanote": "登录到Leanote",
@@ -290,5 +303,38 @@
     "<span></span> notes selected": "当前选中了 <span></span> 篇笔记",
 
     "Sync error, retry to sync after 3 seconds": "同步失败, 3 秒后自动重新尝试同步",
-    "Network error!": "网络异常"
-}
+    "Network error!": "网络异常",
+
+    "Load Database Error": "加载数据库出错, 请尝试在帐户管理中优化数据库",
+
+    "Local account warning": "本地离线帐户警告",
+    "localAccountTips": "你好, 您使用的是本地离线帐户, 您的数据只存在本地, 不会同步到Leanote服务器, 如果您不小心删除了数据或硬盘损坏, 您的数据将永久丢失. <br>所以我们推荐您使用Leanote帐户来使用该客户端, 这样您的数据将会存储到云端, 以避免失误造成的数据丢失. <br>Leanote桌面端不再支持创建本地帐户, 但您之前创建的本地帐户还是可以继续使用.",
+    "Don't Show Anymore": "不再提示",
+
+    "ctrl/cmd+e Toggle Modify with Readonly": "ctrl/cmd+e 切换编辑与只读",
+
+    "Open": "打开",
+    "Close": "关闭",
+
+    "Snippet View": "摘要视图",
+    "List View": "列表视图",
+
+    "Network error, please check out your network.": "网络异常, 请检查网络或稍后再试",
+    "You need to sign in Leanote": "您需要重新登录Leanote",
+    "You need to upgrade Leanote account": "同步失败, 帐户已到期或流量已用完, 您需要升级Leanote帐户",
+
+    "It will not be synced before fixed.": "该笔记未解决前将不会同步",
+    "Sync error": "同步失败",
+    "Message": "信息",
+    "notExists": "服务端笔记不存在",
+    "fileUploadError": "图片/附件上传失败",
+
+    "Toggle DevTools": "切换开发者工具",
+
+    "Date Created - ASC": "按创建时间-升序",
+    "Date Created - DESC": "按创建时间-降序",
+    "Date Updated - ASC": "按更新时间-升序",
+    "Date Updated - DESC": "按更新时间-降序",
+    "Title - ASC": "按标题-升序",
+    "Title - DESC": "按标题-降序"
+}  

@@ -7,11 +7,17 @@ define(function() {
 			'en-us': {
 				'setLang': 'Langs',
 			},
+			'de-de': {
+				'setLang': 'Sprache',
+			},
 			'zh-cn': {
 				'setLang': '语言设置',
 			},
 			'zh-hk': {
 				'setLang': '語言設置',
+			},
+			'ja-jp': {
+				'setLang': '语言设置'
 			}
 		},
 		_langsMenu: {}, // // name => menu

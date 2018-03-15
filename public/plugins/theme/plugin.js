@@ -7,11 +7,17 @@ define(function() {
 			'en-us': {
 				'changeTheme': 'Change theme',
 			},
+			'de-de': {
+				'changeTheme': 'Design auswählen',
+			},
 			'zh-cn': {
 				'changeTheme': '主题设置',
 			},
 			'zh-hk': {
 				'changeTheme': '主題設置'
+			},
+			'ja-jp': {
+				'changeTheme': '主題設定'
 			}
 		},
 

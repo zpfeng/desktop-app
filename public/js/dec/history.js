@@ -89,15 +89,15 @@ define(function() {
             $tpl.find('.back').click(function() {
                 if(confirm(getMsg("confirmBackup"))) {
                     // 保存当前版本
-                    Note.curChangedSaveIt(true);
+                    Note.curChangedSaveIt(true, function () {
+                        // 设置之
+                        note = Note.cache[Note.curNoteId];
+                        setEditorContent(me.list[me.curIndex].Content, note.IsMarkdown);
 
-                    // 设置之
-                    note = Note.cache[Note.curNoteId];
-                    setEditorContent(me.list[me.curIndex].Content, note.IsMarkdown);
-
-                    $tpl.modal('hide');
-                    // 保存
-                    Note.curChangedSaveIt(true);
+                        $tpl.modal('hide');
+                        // 保存
+                        Note.curChangedSaveIt(true);
+                    });
                 }
             });
 
@@ -115,7 +115,11 @@ define(function() {
             var note = Note.getCurNote();
             me.note = note;
             NoteService.getNoteHistories(Note.curNoteId, function(re) {
-                if(!isArray(re)) {
+                if (re === false) {
+                    alert(getMsg('Load Database Error'));
+                    return;
+                }
+                if(!isArray(re) || !re.length) {
                     alert(getMsg('noHistories'));
                     return;
                 }
@@ -154,8 +158,6 @@ define(function() {
                         info.unfold = false
                     }
                 });
-
-               
             });
         },
 

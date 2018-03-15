@@ -3,16 +3,22 @@ var Config = {
         "theme",
         "import_leanote",
         "import_evernote",
+        "import_html",
         "export_pdf",
         "export_html",
         "export_leanote",
         "export_evernote",
-        "langs"
+        "langs",
+        "accounts"
     ],
     "langs": [
         {
             "filename": "en-us",
             "name": "English"
+        },
+        {
+            "filename": "de-de",
+            "name": "Deutsch"
         },
         {
             "filename": "zh-cn",
@@ -21,8 +27,13 @@ var Config = {
         {
             "filename": "zh-hk",
             "name": "繁体中文"
+        },
+        {
+            "filename": "ja-jp",
+            "name": "日本語"
         }
     ],
-    "lang": "en-us",
-    "theme": ""
+    "lang": "",
+    "theme": "",
+    "view": "snippet"
 };

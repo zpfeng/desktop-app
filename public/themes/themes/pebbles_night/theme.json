@@ -6,11 +6,17 @@
         "en-us": {
             "name": "Pebbles-Night"
         },
+        "de-de": {
+            "name": "Steine-Nacht"
+        },
         "zh-cn": {
             "name": "鹅卵石-夜色"
         },
         "zh-hk": {
             "name": "鵝卵石-夜色"
+        },
+        "ja-jp": {
+            "name": "玉石-夜"
         }
     }
 }

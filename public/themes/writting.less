@@ -12,7 +12,8 @@ body.writting {
   #mainMask,
   #leftNotebook,
   .noteSplit,
-  #noteList
+  #noteList,
+  #editBtn
   {
     display: none;
   }
@@ -96,6 +97,13 @@ body.writting {
       }
     }
   }
+
+  #popularToolbar {
+    padding-top: 5px;
+  }
+  #moreBtn {
+    padding-top: 10px;
+  }
 }
 
 #editor .mce-tinymce {
@@ -107,7 +115,6 @@ body.writting {
 #wmd-button-bar {
   position: relative; 
   height: 40px;
-  padding: 5px 0;
   overflow: hidden; 
   background-color: @bgColor;
   background-color: #fbfcf7;
@@ -118,10 +125,15 @@ body.writting {
 #mdEditor .navbar-default, 
 #wmd-button-bar {
   height: 40px !important;
+  padding: 5px 0;
+}
+#mdEditor .navbar-default,
+#wmd-button-bar {
+  overflow: visible;
 }
 #mdEditor {
   .extension-preview-buttons, .layout-wrapper-l3 {
-    top: 40px !important;
+    top: 45px !important;
   }
 }
 #left-column, #right-column, #mdSplitter {
@@ -174,7 +186,7 @@ body.writting {
   width: 80px;
 }
 .mce-menubtn.mce-btn-small span {
-  font-size: 16px;
+  font-size: 12px;
 }
 
 #wmd-input > .editor-content, .preview-container {

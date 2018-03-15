@@ -1,12 +1,40 @@
-var app = require('app');  // Module to control application life.
-var BrowserWindow = require('browser-window');  // Module to create native browser window.
+// var app = require('electron').app;  // Module to control application life.
+const {app, BrowserWindow, crashReporter} = require('electron');
+var ipc = require('electron').ipcMain;
+const electron = require('electron');
+const Menu = electron.Menu
+const Tray = electron.Tray
+var pdfMain = require('pdf_main');
+var appIcon;
 
 // Report crashes to our server.
-require('crash-reporter').start();
+crashReporter.start({
+  productName: 'YourName',
+  companyName: 'YourCompany',
+  submitURL: 'https://your-domain.com/url-to-submit',
+  autoSubmit: true
+});
+
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the javascript object is GCed.
 var mainWindow = null;
+
+// single instance
+const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mainWindow) {
+    mainWindow.show();
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+  }
+})
+
+if (shouldQuit) {
+  app.quit()
+}
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -14,6 +42,7 @@ app.on('window-all-closed', function() {
     app.quit();
 });
 
+// 仅MAC
 // 避免可以启动多个app
 app.on('open-file', function(e) {
   // console.log('reopen');
@@ -25,8 +54,10 @@ app.on('open-file', function(e) {
   }
 });
 
+// 仅MAC
 // var appIsReady = false;
-app.on('activate-with-no-open-windows', function() { 
+app.on('activate', function() {
+  console.log('activate');
   if(mainWindow) {
     mainWindow.show();
   }
@@ -39,47 +70,111 @@ app.on('activate-with-no-open-windows', function() {
   }
 });
 
+// DB
+var DB = {
+  init: function () {
+    var me = this;
+    var db = require('db_main');
+
+    // 前端发来消息
+    // m = {token: token, method: 'insert, findOne', dbname: 'notes', params: {username: "life"}};
+    ipc.on('db-exec', function(event, m) {
+      // me._token2Sender[m.token] = event.sender;
+      db.exec(m, function (ret) {
+        // console.log('main called ret:');
+        // console.log(ret);
+        if (ret && ret.ret) {
+          ret.ret = JSON.stringify(ret.ret);
+        }
+        event.sender.send('db-exec-ret', ret);
+      });
+    });
+
+    /**
+     * 前端发消息过来说可以初始化了
+     * @param  {<Event>} event
+     * @param  {Object} params {
+        curUser: <User> 是当前用户
+        dbPath: string 是用户的dbPath
+        dataBasePath: string 所有数据的基地址
+     * }
+     */
+    ipc.on('db-init', function (event, params) {
+      db.init(params.curUser, params.dbPath, params.dataBasePath);
+    });
+  }
+};
+
 // This method will be called when Electron has done everything
 // initialization and ready for creating browser windows.
 app.on('ready', openIt);
 
-function killPort(callback) {
-  var protocol = require('protocol');
-  if (protocol.registerFileProtocol) {
-    callback();
-    return;
+function removeEvents (win) {
+  win.removeAllListeners('closed');
+  win.removeAllListeners('focus');
+  win.removeAllListeners('blur');
+  win.removeAllListeners('close');
+}
+
+function close (e, force) {
+  console.log('close:', force);
+  if (mainWindow) {
+    mainWindow.hide();
+    e && e.preventDefault();
+    mainWindow.webContents.send('closeWindow');
+  } else {
+    app.quit();
   }
-  var child_process = require('child_process');
-  var port = '8912';
-  if (process.platform.toLowerCase().indexOf('win') === 0) {
-    // & EXIT 表示只循环一次
-    // Leanote会有两个pid绑定端口, 另一个和electron相关, kill掉也会把自己kill掉
-    var sh1 = 'FOR /F "tokens=4 delims= " %P IN (\'netstat -a -n -o ^| findstr :' + port + '\') DO (TaskKill.exe /F /PID %P) & Exit';
-    var sh2 = 'FOR /F "tokens=5 delims= " %P IN (\'netstat -a -n -o ^| findstr :' + port + '\') DO (TaskKill.exe /F /PID %P) & Exit';
-    child_process.exec(sh1, function () {
-      child_process.exec(sh2, callback);
-    });
-  }
-  else {
-    var sh = 'kill -9 $(lsof -i:' + port + ' -t)';
-    child_process.exec(sh, callback);
-  }
+}
+
+function bindEvents (win) {
+  mainWindow = win;
+
+  // Emitted when the window is closed.
+  win.on('closed', function() {
+    console.log('closed');
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    win = null;
+  });
+
+  win.on('focus', function() {
+    console.log('focus');
+    // ipc.send('focusWindow'); mainProcess没有该方法
+    if(win && win.webContents)
+      win.webContents.send('focusWindow');
+  });
+  win.on('blur', function() {
+    console.log('blur');
+    if(win && win.webContents)
+      win.webContents.send('blurWindow');
+  });
+  
+  // 以前的关闭是真关闭, 现是是假关闭了
+  // 关闭,先保存数据
+  win.on('close', function(e) {
+    // windows支持tray, 点close就是隐藏
+    if (process.platform.toLowerCase().indexOf('win') === 0) { // win32
+      win.hide();
+      e.preventDefault();
+      return;
+    }
+
+    // mac 在docker下quit;
+    // linux直接点x linux不支持Tray
+    close(e, false);
+  });
+
 }
 
 function openIt() {
-  killPort(_openIt);
-}
+  // 数据库
+  DB.init();
 
-function _openIt() {
-  // console.log(arguments);
-  // app.getPath('appData');
-
-  // var Evt = require('evt');
-  // var basePath = '/Users/life/Library/Application Support/Leanote'; // require('nw.gui').App.dataPath;
-  // Evt.setDataBasePath(basePath);
-
-  // leanote protocol
-  // require('leanote_protocol');
+  // 协议
+  var leanoteProtocol = require('leanote_protocol');
+  leanoteProtocol.init();
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -90,43 +185,92 @@ function _openIt() {
     }
   );
 
+  console.log('load: file://' + __dirname + '/note.html');
+
   // and load the index.html of the app.
-  mainWindow.loadUrl('file://' + __dirname + '/note.html');
+  mainWindow.loadURL('file://' + __dirname + '/note.html');
 
-  // 不能放在这里, 刚开始有图片, 之后添加的图片不能显示 ??
-  // // 启动服务器, 图片
-  // var Server = require('server');
-  // Server.start();
+  bindEvents(mainWindow);
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
-
-  var ipc = require('ipc');
-  mainWindow.on('focus', function() {
-    // ipc.send('focusWindow'); mainProcess没有该方法
-    if(mainWindow && mainWindow.webContents)
-      mainWindow.webContents.send('focusWindow');
-  });
-  mainWindow.on('blur', function() {
-    if(mainWindow && mainWindow.webContents)
-      mainWindow.webContents.send('blurWindow');
-  });
-  
-  // 关闭,先保存数据
-  mainWindow.on('close', function(e) {
-    mainWindow.hide();
-    e.preventDefault();
-    mainWindow.webContents.send('closeWindow');
-  });
   // 前端发来可以关闭了
   ipc.on('quit-app', function(event, arg) {
     console.log('get quit-app request');
-    mainWindow.destroy();
-    mainWindow = null;
+    if (mainWindow) {
+      mainWindow.destroy();
+      mainWindow = null;
+    } else {
+      app.quit();
+    }
   });
+
+  // open login.html and note.html
+  ipc.on('openUrl', function(event, arg) {
+    console.log('openUrl', arg);
+
+    var html = arg.html;
+    var everWindow = mainWindow;
+    var win2 = new BrowserWindow(arg);
+    win2.loadURL('file://' + __dirname + '/' + html);
+    mainWindow = win2;
+
+    // remove all events then close it
+    removeEvents(everWindow);
+    everWindow.close();
+
+    if (html.indexOf('note.html') >= 0) {
+      bindEvents(mainWindow)
+    }
+  });
+
+  pdfMain.init();
+
+  function show () {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.restore();
+      mainWindow.focus();
+      mainWindow.webContents.send('focusWindow');
+    } else {
+      app.quit();
+    }
+  }
+
+  var trayShowed = false;
+  ipc.on('show-tray', function(event, arg) {
+    if (trayShowed) {
+      return;
+    }
+    trayShowed = true;
+
+    if (process.platform == 'linux') {
+      return;
+    }
+
+    appIcon = new Tray(__dirname + '/public/images/tray/' + ( process.platform == 'darwin' ? 'trayTemplate.png' : 'tray.png'))
+    var contextMenu = Menu.buildFromTemplate([
+      {
+        label: arg.Open, click: function () {
+          show();
+        }
+      },
+      {
+        label: arg.Close, click: function () {
+          close(null, true);
+        }
+      },
+    ]);
+    appIcon.setToolTip('Leanote');
+    // appIcon.setTitle('Leanote');
+    // appIcon.setContextMenu(contextMenu);
+
+    appIcon.on('click', function (e) {
+      show();
+      e.preventDefault();
+    });
+    appIcon.on('right-click', function () {
+      appIcon.popUpContextMenu(contextMenu);
+    });
+
+  });
+
 }

@@ -6,11 +6,17 @@
         "en-us": {
             "name": "Grass"
         },
+        "de-de": {
+            "name": "Gras"
+        },
         "zh-cn": {
             "name": "绿草"
         },
         "zh-hk": {
             "name": "綠草"
+        },
+        "ja-jp": {
+            "name": "草"
         }
     }
 }

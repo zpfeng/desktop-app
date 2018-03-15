@@ -6,11 +6,17 @@
         "en-us": {
             "name": "Dark"
         },
+        "de-de": {
+            "name": "Dunkel"
+        },
         "zh-cn": {
             "name": "暗"
         },
         "zh-hk": {
             "name": "暗"
+        },
+        "ja-jp": {
+            "name": "ダーク"
         }
     }
 }

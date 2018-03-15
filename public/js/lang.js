@@ -15,14 +15,26 @@ var lang = {
 	// 读取语言, 修改html
 	init: function() {
 		var me = this;
-		var curLang = Config['lang'] || 'en-us';
-		langData = me.readJson('public/langs/' + curLang + '.js');
+		var defaultLang = 'en-us';
+
+		var sysLang = app.getLocale();
+		if (sysLang) {
+			sysLang = sysLang.toLowerCase();
+		}
+
+		var curLang = Config['lang'] || sysLang || defaultLang;
+		var langData = me.readJson('public/langs/' + curLang + '.js');
 		if(!langData) {
-			return;
+			langData = me.readJson('public/langs/' + defaultLang + '.js');
+			if (!langData) {
+				return;
+			}
 		}
 		// 设为全局
 		window.curLang = curLang;
 		window.langData = langData;
+
+		$('body').addClass('lang-' + curLang);
 
 		me.renderHtml();
 	},

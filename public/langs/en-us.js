@@ -87,6 +87,7 @@
     "leanoteBlog": "Blog",
     "leftHidden": "Hidden slide bar",
     "leftShow": "Show slide bar",
+    "List view": "List view",
     "login": "Sign in",
     "loginSuccess": "login success",
     "logining": "Sign in",
@@ -96,6 +97,8 @@
     "moto2": "Knowledge, Sharing, Cooperation, Blog... all in leanote",
     "moto3": "Brief But Not Simple",
     "move": "Move to",
+    "doubleClick": "Please 'double-click' the target notebook",
+    "selectNotebook": "Select Notebook",
     "myBlog": "Blog",
     "myNote": "My note",
     "myNotebook": "My notebook",
@@ -143,6 +146,7 @@
     "shareInfo": "Share your knowledge to your friends in leanote.",
     "shareToFriends": "Share to friends",
     "simple": "Simple",
+    "Snippet view": "Snippet view",
     "submit": "submit",
     "suggestions": "Suggestions",
     "suggestionsInfo": "help us to improve our service.",
@@ -184,5 +188,7 @@
 	"Tag": "Tag",
 	"Starred": "Starred",
 
-	"ForceFullSyncMsg": "Full sync will load all data from server, are you sure ?"
+    "localAccountTips": "Please note that your account is local account which <b>is not the Leanote's account</b>, and your data just save onto your local disk. Once your disk is broken, the data cannot be recovered. So we recommend you to use Leanote Desktop App with Leanote account, and your data will sync to Leanote server.<p>Leanote Desktop App has disabled the feature that create a local account. You can login Leanote Desktop App with local account whitch created before. But we recommend you to use Leanote Desktop App with Leanote account.</p>",
+
+	"ForceFullSyncMsg": "Full sync will remove the current account's all local data (includes database, images and attachments) and load all data from server, are you sure ?"
 }

@@ -159,6 +159,16 @@ kbd {
   list-style-type:none;
   margin-bottom:15px
 }
+.m-todo-item {
+  list-style: none;
+}
+pre code {
+  padding: 0;
+  color: inherit;
+  white-space: pre-wrap;
+  background-color: inherit;
+  border-radius: 0;
+}
 </style>
 <!-- 该css供自定义样式 -->
 <link href="../leanote-markdown.css" rel="stylesheet">
@@ -168,7 +178,7 @@ kbd {
 
 	<div class="note-container">
 		<h1 class="title" id="leanote-title">{title}</h1>
-		<div class="content-container" id="content-container">
+		<div class="content-container html" id="content-container">
 			<!-- 切换 -->
 			<div class="tab"><a id="tab-markdown">Markdown</a><a id="tab-html">HTML</a></div>
 			<textarea id="leanote-content-markdown">{content}</textarea>

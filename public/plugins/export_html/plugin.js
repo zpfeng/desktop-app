@@ -17,6 +17,14 @@ define(function() {
 				'exportFailure': 'HTML saved failure!',
 				'notExists': 'Please sync your note to ther server firslty.'
 			},
+			'de-de': {
+				'export': 'Als HTML exportieren',
+				'Exporting': 'Exportiere',
+				'Exporting: ': 'Exportiere: ',
+				'exportSuccess': 'HTML erfolgreich gespeichert!',
+				'exportFailure': 'HTML speichern fehlgeschlagen!',
+				'notExists': 'Bitte Notizen zuerst mit dem Server synchronisieren.'
+			},
 			'zh-cn': {
 				'export': '导出HTML',
 				'Exporting': '正在导出',
@@ -103,7 +111,7 @@ define(function() {
 			var me = this;
 			// http://127.0.0.1:8912/api/file/getImage?fileId=5581029f6289dc3301000000
 			// 找到图片
-			var reg = new RegExp(Api.evtService.localUrl + '/api/file/getImage\\?fileId=([0-9a-zA-Z]{24})', 'g');
+			var reg = new RegExp('leanote://file/getImage\\?fileId=([0-9a-zA-Z]{24})', 'g');
 			// console.log(Api.evtService.localUrl + '/api/file/getImage\\?fileId=([0-9a-zA-Z]{24})');
 			var matches = content.match(reg);
 			// content = content.replace(reg, Evt.leanoteUrl + '/api/file/getImage');
@@ -141,7 +149,7 @@ define(function() {
 		// 得到存放images, js, css的路径
 		getAssetsPath: function(basePath, nameNotExt, n, cb) {
 			var me = this;
-			var absPath = basePath + '/' + nameNotExt + '_files';
+			var absPath = basePath + Api.commonService.getPathSep() + nameNotExt + '_files';
 			if (n > 1) {
 				absPath += '-' + n;
 			}
@@ -312,7 +320,7 @@ define(function() {
 			var name = note.Title ? note.Title + '.html' : getMsg('Untitled') + '.html';
 			name = me.fixFilename(name);
 
-			var targetPath = path + '/' + name;
+			var targetPath = path + Api.commonService.getPathSep() + name;
 
 			// 将路径和名字区分开
 			var pathInfo = Api.commonService.splitFile(targetPath);

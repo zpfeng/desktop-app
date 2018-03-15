@@ -7,11 +7,17 @@
         "en-us": {
             "name": "Volumn"
         },
+        "de-de": {
+            "name": "Volumn"
+        },
         "zh-cn": {
             "name": "书卷"
         },
         "zh-hk": {
             "name": "書卷"
+        },
+        "ja-jp": {
+            "name": "書巻"
         }
     }
 }

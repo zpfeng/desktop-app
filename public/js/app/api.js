@@ -1,3 +1,4 @@
+
 // 只有api的插件才能访问
 var Api = {
 	notebook: Notebook,
@@ -6,6 +7,7 @@ var Api = {
 	loading: Loading,
 	gui: gui,
 	onClose: onClose,
+	switchToLoginWhenNoUser: switchToLoginWhenNoUser,
 	reloadApp: reloadApp,
 	isMac: isMac(),
 	nodeFs: NodeFs,
@@ -14,6 +16,20 @@ var Api = {
 	fileService: FileService,
 	noteService: NoteService,
 	userService: UserService,
+	dbService: db,
+	ipc: nodeRequire('electron').ipcRenderer,
+    projectPath: projectPath,
+
+	// 打开本地目录
+	// mac和windows下不同
+	openLocalDir: function (dir) {
+		if (isMac()) {
+			gui.Shell.showItemInFolder(dir);
+		}
+		else {
+			gui.Shell.openItem(dir);
+		}
+	},
 
 	// 得到当前版本
 	getCurVersion: function (callback) {
@@ -80,7 +96,7 @@ var Api = {
 		if(prefix) {
 			key = prefix + '.' + key;
 		}
-		
+
 		var msg = me._langs[me.curLang][key] || me._langs[me.defaultLang][key] || rawKey;
 
 		if(data) {
@@ -101,7 +117,7 @@ var Api = {
 		$.extend(me._langs[me.curLang], window.langData);
 
 		// extend
-		window.getMsg = function(key, prefix, data) { 
+		window.getMsg = function(key, prefix, data) {
 			return me.getMsg(key, prefix, data);
 		};
 	},
@@ -120,12 +136,23 @@ var Api = {
 		me._themeMenu = menus;
 	},
 
+  // markdown theme
+  _mdThemeMenu: null,
+  getMdThemeMenu: function() {
+    var me = this;
+		return me._mdThemeMenu;
+  },
+  setMdThemeMenu: function(menus) {
+    var me = this;
+    me._mdThemeMenu = menus;
+  },
+
 	_importMenus: [],
 	addImportMenu: function(menu) {
 		var me = this;
 		me._importMenus.push(menu);
 	},
-	getImportMenus: function() { 
+	getImportMenus: function() {
 		var me = this;
 		return me._importMenus;
 	},
@@ -174,5 +201,54 @@ var Api = {
 		me._moreMenus.push(menu);
 	}
 };
+
+//-------------
+// 全局事件机制
+
+$.extend(Api, {
+	_eventCallbacks: {},
+	_listen: function(type, callback) {
+        var callbacks = this._eventCallbacks[type] || (this._eventCallbacks[type] = []);
+        callbacks.push(callback);
+    },
+    // on('a b', function(params) {})
+    on: function(name, callback) {
+        var names = name.split(/\s+/);
+        for (var i = 0; i < names.length; ++i) {
+        	this._listen(names[i], callback);
+        }
+        return this;
+    },
+    // off('a b', function(params) {})
+    off: function(name, callback) {
+        var types = name.split(/\s+/);
+        var i, j, callbacks, removeIndex;
+        for (i = 0; i < types.length; i++) {
+            callbacks = this._eventCallbacks[types[i].toLowerCase()];
+            if (callbacks) {
+                removeIndex = null;
+                for (j = 0; j < callbacks.length; j++) {
+                    if (callbacks[j] == callback) {
+                        removeIndex = j;
+                    }
+                }
+                if (removeIndex !== null) {
+                    callbacks.splice(removeIndex, 1);
+                }
+            }
+        }
+    },
+    // LEA.trigger('a', {});
+    trigger: function(type, params) {
+        var callbacks = this._eventCallbacks[type] || [];
+        if (callbacks.length === 0) {
+            return;
+        }
+        for (var i = 0; i < callbacks.length; i++) {
+            callbacks[i].call(this, params);
+        }
+    }
+});
+
 
 Api._init();

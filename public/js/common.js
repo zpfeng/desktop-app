@@ -361,6 +361,12 @@ function setEditorContent(content, isMarkdown, preview, callback) {
 		_setEditorContent(content, isMarkdown, preview, callback);
 	// });
 }
+function setEditorIsDirty(isDirty) {
+	tinymce.activeEditor.isNotDirty = !isDirty; // isDirty = false
+}
+function editorIsDirty() {
+	return !LEA.readOnly && tinymce.activeEditor.isDirty();
+}
 function _setEditorContent(content, isMarkdown, preview, callback) {
 	if(!content) {
 		content = "";
@@ -387,6 +393,8 @@ function _setEditorContent(content, isMarkdown, preview, callback) {
 		if(typeof tinymce != "undefined" && tinymce.activeEditor) {
 			var editor = tinymce.activeEditor;
 			editor.setContent(content);
+			setEditorIsDirty(false);
+			// editor.isNotDirty = true; // isDirty = false
 
 			callback && callback(); // Note.toggleReadOnly();
 
@@ -445,11 +453,11 @@ function _setEditorContent(content, isMarkdown, preview, callback) {
 
 // 复制图片
 // 在web端得到图片
-var clipboard = require('clipboard');
+const {clipboard} = require('electron');
 function pasteImage(e) {
 	var image = clipboard.readImage();
 	if(image) {
-		var dataUrl = image.toDataUrl();
+		var dataUrl = image.toDataURL();
 		// 空图片
 	    if(dataUrl == "data:image/png;base64,") {
 		    return;
@@ -839,6 +847,7 @@ function getObjectId() {
 
 //-----------------------------------------
 function resizeEditor(second) {
+	LEA.isM && MD && MD.resize && MD.resize();
 	return;
 	var h = $("#mceToolbar").height()
     $("#editorContent").css("top", h);
@@ -1498,23 +1507,37 @@ var ContextTips = {
 };
 
 function goToMainPage() {
-	var BrowserWindow = gui.remote.require('browser-window');
-	var win = new BrowserWindow(getMainWinParams());
-	win.loadUrl('file://' + __dirname + '/note.html?from=login');
+	// var BrowserWindow = gui.remote.BrowserWindow;
+	// var win = new BrowserWindow(getMainWinParams());
+	// win.loasdURL('file://' + __dirname + '/note.html?from=login');
+	const {ipcRenderer} = require('electron');
+	var ipc = ipcRenderer;
+	var params = getMainWinParams();
+	params.html = 'note.html?from=login';
+	ipc.send('openUrl', params);
 }
 
-function switchAccount() {
-	SyncService.stop();
-	// location.href = 'login.html';
-	var BrowserWindow = gui.remote.require('browser-window');
+function toLogin() {
+	const {ipcRenderer} = require('electron');
+	var ipc = ipcRenderer;
+	// var BrowserWindow = gui.remote.BrowserWindow;
 	if(isMac()) {
-		var win = new BrowserWindow({ width: 278, height: 326, show: true, frame: false, resizable: false });
-		win.loadUrl('file://' + __dirname + '/login.html');
+		ipc.send('openUrl', {html: 'login.html', width: 278, height: 370, show: true, frame: false, resizable: false })
 	} else {
-		var win = new BrowserWindow({ width: 278, height: 400, show: true, frame: true, resizable: false });
-		win.loadUrl('file://' + __dirname + '/login.html');
+		ipc.send('openUrl', {html: 'login.html',  width: 278, height: 400, show: true, frame: true, resizable: false })
 	}
-	gui.getCurrentWindow().close();
+	// gui.getCurrentWindow().close();
+}
+// 添加用户
+function switchAccount() {
+	onClose(function () {
+		toLogin();
+	});
+}
+
+// 当没有用户时, 切换之
+function switchToLoginWhenNoUser() {
+	toLogin();
 }
 
 // 没有一处调用
@@ -1602,29 +1625,60 @@ var Loading = {
 	$msg: $('#loadingDialogBodyMsg'),
 	// option {hasProgress: true, onClose: function}
 	inited: false,
-	setMsg: function (msg) {
+	setMsg: function (msg, showLoading) {
+		var me = this;
 		this.$msg.html(msg);
+		if (showLoading === undefined) {
+			showLoading = true;
+		}
+		if (showLoading) {
+			me.$loadingDialog.removeClass('hide-loading');
+		}
+		else {
+			me.$loadingDialog.addClass('hide-loading');
+		}
 	},
 	setProgressRate: function (msg) {
 		this.$progressRate.html(msg);
 	},
+
+	/**
+	 * [show description]
+	 * @param  {[type]} msg    [description]
+	 * @param  {[type]} option {
+	 *                         'hasProgress': false, 是否有进度
+	 *                         'hideClose': false, // 默认为false, 是否隐藏close
+	 * }
+	 * @return {[type]}        [description]
+	 */
 	show: function(msg, option) {
 		option = option || {};
 		msg || (msg = getMsg("loading..."));
 		this.$msg.html(msg);
+
 		if (option.isLarge) {
 			this.$loadingDialog.find('.modal-dialog').addClass('modal-large');
 		}
 		else {
 			this.$loadingDialog.find('.modal-dialog').addClass('modal-large');
 		}
+
 		this.$loadingDialog.modal({backdrop: 'static', keyboard: true});
+
 		if (option.hasProgress) {
 			this.$loadingDialog.addClass('has-progress');
 		}
 		else {
 			this.$loadingDialog.removeClass('has-progress');
 		}
+
+		if (option.hideClose) {
+			this.$loadingDialog.addClass('hide-close');
+		}
+		else {
+			this.$loadingDialog.removeClass('hide-close');
+		}
+
 		this.onClose = option.onClose;
 		if (!this.inited) {
 			this.init();
@@ -1641,8 +1695,10 @@ var Loading = {
 	setProgress: function (rate) {
 		this.$progressBar.width(rate + '%');
 	},
-	hide: function() {
-		$('#loadingDialog').modal('hide');
+	hide: function(timeout) {
+		setTimeout(function () {
+			$('#loadingDialog').modal('hide');
+		}, timeout ? timeout : 0);
 	}
 };
 
@@ -1718,16 +1774,13 @@ var Notify = {
 var onClose = function(afterFunc) {
 	console.log('on close');
 	try {
-		// 先把服务/协议关掉
-	    Server.close(function () {
-		    SyncService.stop();
-		    // 先保存之前改变的
-		    Note.curChangedSaveIt();
-		    // 保存状态
-		    State.saveCurState(function() {
-		        afterFunc && afterFunc();
-		    });
-		});
+	    SyncService.stop();
+	    // 先保存之前改变的
+	    Note.curChangedSaveIt();
+	    // 保存状态
+	    State.saveCurState(function() {
+	        afterFunc && afterFunc();
+	    });
 	} catch(e) {
 		console.error(e);
 		afterFunc && afterFunc();
@@ -1737,6 +1790,10 @@ var onClose = function(afterFunc) {
 function isURL(str_url) {
     var re = new RegExp("^((https|http|ftp|rtsp|mms|emailto)://).+");
     return re.test(str_url);
+}
+
+function isOtherSiteUrl(url) {
+	return url.indexOf('http://127.0.0.1') < 0 && isURL(url);
 }
 
 function reloadApp() {
